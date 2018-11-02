@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>JS Bin</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Slab" rel="stylesheet">
+</head>
+<style>
+html,body {
+  margin: 0 auto;
+  font-family: 'Roboto', sans-serif;
+}
+</style>
+
+<body>
+  <script>//Los histograms son usados para mostrar la distribucion de valores de una data, por ejemplo personas de 1 a 11 años en una data
+  //En este caso consumiremos data de una poblacion de individuos con diferentes edades
+  d3.csv("dataAges.cvs", function (data) { //llamamos a la data dentro de nuesro cvs
+
+    console.log(data);//muestra un arreglo de objetos, cada objeto con su name y age como keys
+    //vamos a usar la funcion map la cual nos regresa valores basados en nuestro criterio
+    var map = data.map( function (i) { return parseInt(i.age); })//var map tendra los valores de la iteracion de la data con la funcion map de la columna age, i en este caso se refiere a cada objeto en la data
+    console.log(map);//muestra un arreglo donde cada index tiene el valor de "age" de cada elemento en la data, es decir la data parseada y transformada a entero con la funcion parseInt
+
+
+    var histogram = d3.layout.histogram()//vamos a usar la funcion histogram para el layout
+    .bins(5)//el numero de intervalos que vamos a mostrar
+    (map)//de donde viene nuestra data
+
+    console.log(histogram)//regresa x numero de arreglos, cuando x es bins(x), cada arreglo representa un intervalo de "age", cada arreglo tiene los valores dx, X y Y
+    //dx es un valor que le da a cada intervalo para su grosor, les da por lo general el mismo grosor a cada intervalo
+    //y contiene el numero de valores en cada rango que la data "age" fue clasificada por la funcion histogram
+    //x nos da la posicion en x de como se va a renderear cada barra
+
+    var svg = d3.select("body").append("svg")//la variable svg es igual a una funcion que anexa al body un svg
+    .attr("width", 600)
+    .attr("height",600);
+
+    //Enlazamos nuestra data con el documento
+    var bars = svg.selectAll(".bar")//selecionamos nuestras bar, aunque aun no existan
+    .data(histogram)//nuestra data viene de histogram
+    .enter()//insertamos, como siempre
+    .append("g")//la variable bars va a ser igual a x numero de grupos equivalente al numero de intervalos en histogram
+
+    bars.append("rect")//selecionamos la variable bars y le anexamos las barras(rectangulos)
+    .attr("x" , function(d) { return d.x * 7 + 7 ; })//cada barra se va a empezar a renderear en x con el valor de x de su arreglo *7 +7
+    .attr("y" , 0)//El punto de inicio de la barras en y, y su separacion en este valor
+    .attr("width", function(d) { return d.dx * 5 - 5; })//el grosor de las barras
+    .attr("height", function (d) { return d.y * 20 ; }) //la frecuencia está indicada con el valor y, representa que tan altas van a ser las barras
+    .attr("fill" , "steelblue")//el color de las barras
+
+  })
+
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>JS Bin</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Slab" rel="stylesheet">
+</head>
+<style>
+html,body {
+  margin: 0 auto;
+  font-family: 'Roboto', sans-serif;
+  background-color: #252530;
+}
+/*svg es el canvas que contiene la grafica*/
+svg {
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+  top: 30px;
+  position: relative;
+}
+h2 {
+  margin: 20px auto;
+  text-align: center;
+  color: white;
+}
+/*estilos para los axis X y Y */
+.axis path,
+.axis line {
+  fill: none;
+  stroke:red;
+  shape-rendering : chrishpEdges;
+}
+</style>
+
+<body>
+  <h2>Sistema de Burbuja</h2>
+  <script>
+  var width = 500;
+  var height = 500;
+  //Creamos el svg tambien llamado canvas, el primer paso
+  var svg= d3.select("body").append("svg")
+  .attr("width", width)
+  .attr("height",height)
+  .append("g")
+  //
+  var pack = d3.layout.pack()
+  .size([width ,height - 100])
+  .padding(10);
+
+  d3.json("mydata2.json", function (data) {
+
+    var nodes = pack.nodes(data);
+    console.log(nodes);
+
+    var node = svg.selectAll(".node")//seleccionamos todo con la clase node, aunque en este punto no exista
+    .data(nodes)//la data sera proveida por el metodo nodes a traves de la variable nodes
+    .enter()//insertamos, como siempre
+    .append("g")
+    .attr("class", "node")
+    .attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; });
+
+
+    node.append("circle")
+    //animacion***
+    .attr("fill" ,"white")
+    .attr('opacity', 0)
+    .transition().duration(1000)//la duracion de la transicion es 2 segundos
+    .delay(function (d, i) { return i * 200 })
+    //fin de la animacion***
+    .attr("r", function (d) { return d.r;})//
+    .attr("fill", "red")
+    .attr("opacity", 0.25)
+    .attr("stroke" , "#ADADAD")
+    .attr("stroke", "2")
+
+    node.append("text")
+    //animacion***
+    .attr("fill" ,"white")
+    .attr('opacity', 0)
+    .transition().duration(1200)//la duracion de la transicion es 2 segundos
+    .delay(function (d, i) { return i * 200 })
+    //fin de la animacion***
+    //Aqui creamos un if statement corto , si un node tiene el key children, entonces el texto pasa a ser un string vacio, : es else
+    .text( function (d) { return d.children ? "" : d.name; })// esta funcion regresa los key name de los node que no tienen la key children
+    .style("text-anchor", "middle")//posicionamos el texto al centro de donde es creado
+    .attr('opacity', 1)
+
+  });
+
+
+  </script>
+
+</body>
+</html>

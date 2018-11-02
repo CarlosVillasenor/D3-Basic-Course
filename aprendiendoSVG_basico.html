@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<!--
+Created using JS Bin
+http://jsbin.com
+
+Copyright (c) 2017 by anonymous (http://jsbin.com/julinofoqu/2/edit)
+
+Released under the MIT license: http://jsbin.mit-license.org
+-->
+<meta name="robots" content="noindex">
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>JS Bin</title>
+</head>
+<body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.3/d3.min.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Amiko" rel="stylesheet">
+  <style>
+    text {
+    font-size: 1.2 em;
+    font-family: 'Amiko', sans-serif;
+    } 
+    .barra {
+      fill: #1EBDFB;
+    }
+  </style>
+  
+  <svg width="100%" height="100">
+    <rect x=10 y=10 width="50" height="50" fill="rgba(250, 0,0,.5)"></rect>
+  </svg> 
+  <!--cx es el centro del circulo en x, r es el radio del circulo-->
+  <svg width="100%" height="100">
+    <circle cx=25 cy=25 r=25 fill="rgba(250, 0,0,.5)"></cicle>
+  </svg> 
+  
+  <svg width="100%" height="100">
+    <line x1="10" y1="20" x2="40" y2="40" stroke="black" stroke-width="5" fill="rgba(250, 0,0,.5)"></line>
+  </svg> 
+ <!--M(x) (y) es el punto donde inicia el path, L es el segundo y siguientes puntos-->
+  <svg width="100%" height="200">
+    <path d="M10 10 L60 150 L110 60 L160 50 L210 100 L260 20" fill="none"  stroke-width="4" stroke="black"></path>
+  </svg> 
+  <!--g es para crear un grupo y moverlo-->
+  <svg width="100%" height="200" viewport-fill="red">
+    <rect class="barra" x=0 y=0 width="10" height="100" fill="rgba(250, 0,0,.5)"></rect>
+    <rect class="barra" x=0 y=100 width="200" height="10" fill="rgba(250, 0,0,.5)"></rect>
+    <text x=0 y=130 >Scatter Plot </text>
+    <g transform="translate(30,30)">
+      <circle cx="0" cy="15" r="5"/>
+      <circle cx="30" cy="20" r="5"/>
+      <circle cx="60" cy="35" r="5"/>
+      <circle cx="90" cy="15" r="5"/>
+    </g>
+  </svg>
+  
+  <script>
+    console.log("Hello");
+  </script>
+</body>
+</html>

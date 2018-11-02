@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>JS Bin</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Slab" rel="stylesheet">
+</head>
+<style>
+html,body {
+  margin: 0 auto;
+  font-family: 'Roboto', sans-serif;
+  background-color: #252530;
+}
+/*svg es el canvas que contiene la grafica*/
+svg {
+
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+  top: 30px;
+  position: relative;
+}
+h2 {
+  margin: 20px auto;
+  text-align: center;
+  color: white;
+}
+/*estilos para los axis X y Y */
+.axis path,
+.axis line {
+  fill: none;
+  stroke:red;
+  shape-rendering : chrishpEdges;
+}
+</style>
+
+<body>
+  <h2>Edades en una poblacion</h2>
+  <script>//Los histograms son usados para mostrar la distribucion de valores de una data, por ejemplo personas de 1 a 11 años en una data
+  //En este caso consumiremos data de una poblacion de individuos con diferentes edades
+
+  width= 400;
+  height= 500;
+  padding= 50;
+
+  d3.csv("dataAges.cvs", function (data) { //llamamos a la data dentro de nuesro cvs
+
+    console.log(data);//muestra un arreglo de objetos, cada objeto con su name y age como keys
+    //vamos a usar la funcion map la cual nos regresa valores basados en nuestro criterio
+    var map = data.map( function (i) { return parseInt(i.age); })//var map tendra los valores de la iteracion de la data con la funcion map de la columna "age", i en este caso se refiere a cada objeto en la data
+    console.log(map);//muestra un arreglo donde cada index tiene el valor de "age" de cada elemento en la data, es decir la data parseada y transformada a entero con la funcion parseInt
+
+
+    var histogram = d3.layout.histogram()//vamos a usar la funcion histogram para el layout
+    .bins(7)//el numero de intervalos que vamos a mostrar
+    (map)//de donde viene nuestra data
+
+    console.log("Histogram var: ")
+    console.log(histogram)//regresa x numero de arreglos, cuando x es bins(x), cada arreglo representa un intervalo de "age", cada arreglo tiene los valores dx, X y Y
+    //dx es un valor que le da a cada intervalo para su grosor, les da por lo general el mismo grosor a cada intervalo
+    //y contiene el numero de valores en cada rango que la data "age" fue clasificada por la funcion histogram
+    //x nos da la posicion en x de como se va a renderear cada barra
+
+    //Creamos las escalas_______________________________________________________
+    var y = d3.scale.linear()
+    .domain([ 0, d3.max(histogram.map(function (i) { return i.length;  })) ])
+    .range([ 0 , height]);
+
+    var x = d3.scale.linear()
+    .domain([0,d3.max(map)])
+    .range([0,width]);
+    //Creamos los Axis
+    var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+    //Creamos el canvas_________________________________________________________
+    var svg = d3.select("body").append("svg")//la variable svg es igual a una funcion que anexa al body un svg
+    .attr("width", width)
+    .attr("height", height + padding)
+    .append("g")
+    .attr("transform" , "translate(0,0)");
+
+    var group = svg.append("g")
+    .attr("transform", "translate(0," + height + ")")//Esto hace que el xAxis este al fondo de los rectangulos
+    .call(xAxis)
+    .style("font-size","0px");
+
+    //Enlazamos nuestra data con el documento___________________________________
+    var bars = svg.selectAll(".bar")//selecionamos nuestras bar, aunque aun no existan
+    .data(histogram)//nuestra data viene de histogram
+    .enter()//insertamos, como siempre
+    .append("g")//la variable bars va a ser igual a x numero de grupos equivalente al numero de intervalos en histogram
+
+    //Creamos los rectangulos___________________________________________________
+    bars.append("rect")//selecionamos la variable bars y le anexamos las barras(rectangulos)
+    //animacion***
+    .attr("height",0)
+    .attr("y", height)
+    .transition().duration(2000)//la duracion de la transicion es 2 segundos
+    .delay(function (d, i) { return i * 300 })
+    //fin de la animacion***
+    .attr("x" , function(d) { return x(d.x); })//cada barra se va a empezar a renderear en x con el valor de x de su arreglo *7 +7
+    .attr("y" , function (d) { return 500 - y(d.y);   })//El punto de inicio de la barras en y, y su separacion en este valor
+    .attr("width", function(d) { return x(d.dx) * .95; })//el grosor de las barras
+    .attr("height", function (d) { return y(d.y); }) //la frecuencia está indicada con el valor y, representa que tan altas van a ser las barras
+    .attr("fill" , "steelblue")//el color de las barras
+
+    //Texto con el numero de repeticiones del intervalo_________________________
+    bars.append("text")
+    //animacion***
+    .attr('opacity', 0)
+    .attr("fill", "black")
+    .attr("height",0)
+    .attr("y", height)
+    .transition().duration(2000)//la duracion de la transicion es 2 segundos
+    .delay(function (d, i) { return i * 300 })
+    //fin de la animacion***
+    .attr("x", function(d){ return x(d.x); })
+    .attr("y", function (d) { return 500 -  y(d.y); })
+    .attr("fill", "#fff")
+    .attr("dy" , "20px")
+    .attr("dx" , function (d) { return (x(d.dx)*.95)/2})
+    .attr("text-anchor", "middle")
+    .attr('opacity', 1)
+    .text( function (d) { return d.y; })
+
+    //Texto con los rangos de cada intervalo____________________________________
+    bars.append("text")
+    //animacion***
+    .attr('opacity', 0)
+    .transition().duration(2200)//la duracion de la transicion es 2 segundos
+    .delay(function (d, i) { return i * 400 })
+    //fin de la animacion***
+    .attr("x", function(d){ return x(d.x); })
+    .attr("y", function (d) { return  485; })//altura
+    .attr("fill", "#fff")
+    .attr("dy" , "42px")
+    .attr("dx" , function (d) { return (x(d.dx)*.95)/2})//El valor a mostrar
+    .attr("text-anchor", "middle")
+      .attr('opacity', 1)
+    .text( function (d) { return (d[0]) + " - " + (Math.max.apply(Math, d));  })//El dato a regresar
+    //d3.max(histogram.map(function (i) { return i.length;  }))
+
+  })
+
+  </script>
+
+</body>
+</html>

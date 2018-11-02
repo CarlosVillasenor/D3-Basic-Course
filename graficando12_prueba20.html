@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>JS Bin</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Slab" rel="stylesheet">
+</head>
+<style>
+html,body {
+  margin: 0 auto;
+  font-family: 'Roboto', sans-serif;
+  background-color: darkgrey;
+}
+/*svg es el canvas que contiene la grafica*/
+svg {
+
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+  top: 30px;
+  position: relative;
+}
+h2 {
+  margin: 20px auto;
+  text-align: center;
+  color: white;
+}
+</style>
+
+<body>
+  <h2>Mapa D3</h2>
+  <script>
+  width = 760;
+  height = 700;
+
+  var canvas = d3.select("body").append("svg")
+  .attr( "width" , width)
+  .attr( "height" , height);
+
+  //d3.json("stations.geojson", function (data) {
+    d3.json("francia.geojson", function (data) {
+
+    var group  = canvas.selectAll("g")
+    .data(data.features)
+    .enter()
+    .append("g")
+
+    var projection = d3.geo.mercator().scale(280).translate([width / 2, height / 2]);
+    var path= d3.geo.path().projection(projection);
+
+    var areas = group.append("path")
+    .attr("d", path)
+    .attr("class", "area")
+    .attr("fill", "steelblue");
+
+  });
+
+
+
+  </script>
+
+</body>
+</html>

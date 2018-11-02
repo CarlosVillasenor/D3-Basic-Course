@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>The tree layout 2</title>
+  <script src="https://d3js.org/d3.v3.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Slab" rel="stylesheet">
+</head>
+<style>
+html,body {
+  margin: 0 auto;
+  font-family: 'Roboto', sans-serif;
+}
+h2 {
+  text-align: center;
+  color: #24292E;
+}
+svg {
+  background-color:white;
+  margin: 0 auto ;
+  display: block;
+}
+</style>
+<body>
+  <h2>Sistema de Arbol</h2>
+  <script>
+  //Creamos el svg tambien llamado canvas, el primer paso
+  var svg= d3.select("body").append("svg")
+  .attr("width", 600)
+  .attr("height", 600)
+  .append("g")
+  .attr("transform" , "translate(50,50)");
+
+  //Creamos el layout, es el segundo paso
+  var tree = d3.layout.tree()
+  .size([ 400 , 400 ]);//este es el tamaño maximo de nuestra grafica de arból
+
+  d3.json("mydata2.json" ,function (data){ //cargamos la data, todo dentro de esta funcion puede utilizar nuestra data
+
+    var nodes = tree.nodes(data);//usamos el metodo nodes en nuestro tree layout, regresa todos los objetos con las propiedades de X, Y, su padre y su hijo
+    //Los links son el path entre cada node
+    var links = tree.links(nodes);//hacemos referencia a nuestro tree layout otra vez, regresa un arreglo con objetos, cada objeto con dos propiedades: source y target, para crear diagonales
+    console.log("Los links: ", links);
+    console.log("Los nodes:", nodes);
+    //Creamos la diagonal, la cual es la variable que regresa los objetos de source y target a renderear, en este caso de cada objeto en la data
+    var diagonal = d3.svg.diagonal()
+    .projection( function (d) { return[0 ,d.x]; })//projection es una funcion de acceso, aqui modificamos su valores por default para invertir el como enviara la informacion a renderear
+
+    svg.append("g").attr("class", "links");//creamos un grupo y le anexamos la clase llamada links
+    svg.append("g").attr("class", "nodes");//creamos un grupo y le anexamos la clase llamada nodes
+
+    //Creamos los paths que conectan los nodos, en este caso los creamos en la variable llamada link
+    var link = svg.select(".links").selectAll(".link")//selecionamos el grupo vacio links y todos los elementos no existentes llamados link
+    .data(links)//la data viene de la variable links que creamos, la cual creo los objetos con las propiedades source y target
+    .enter()//insertamos, como siempre
+    .append("path")//le adjuntamos un path, el cual es un objeto de d3
+    .attr("class" ,"link")//a cada path le asignamos la clase de link
+    .attr("fill", "none")
+    .attr("stroke", "#ADADAD")
+    .attr("d" , diagonal); //la path data es generada de la variable "diagonal" que creamos
+    //
+    var node = svg.select(".nodes")//selecionamos nuestro grupo con la clase nodes
+    .selectAll(".node")//selecionamos todo con la clase de node, lo cual es nada
+    .data(nodes)//hacemos un binding de nuestra data  de nuestra variable nodes
+    .enter()//insertamos, como siempre
+    .append("g")//le anexamos el elemnto g a cada uno de los objetos de la data(nodes)
+    .attr("class" , "node")//le daremos la clase de "node", por lo que ya existen los node que seleccionamos
+    .attr("transform", function (d) { return "translate(" + 0 + "," + d.x + ")"; }); //Le asignamos la posicion a los nodos,Si invertimos los valores d.x y d.y invertmos el acomodo de los nodos
+    //creamos la variable radio que regresa un numero
+    var radio = function (d) { return (5); };
+    //Le agregamos a cada node un circulo
+    node.append("circle")
+    .attr("r" ,radio )
+    .attr("fill", "steelblue")
+    .style("z-index","10");
+    //Le agregamos a cada node un texto
+    node.append("text")
+    .text( function (d) { return d.name; } )//El texto viene de la iteracion de la data
+    .attr("fill", "black")
+    .attr("dx", ".4em")
+    .attr("dy", "-.4em");
+
+
+
+    //Animaciones
+    var diagonal2 = d3.svg.diagonal().projection( function (d) { return[d.y ,d.x]; });
+    link.transition().duration(5000).attr("d" , diagonal2);
+    node.transition().duration(5000)
+    .attr("transform", function (d) { return "translate(" + d.y + "," + d.x + ")"; }); //Si invertimos los valores X y Y invertmos el acomodo de los nodos
+
+  })
+
+  </script>
+
+</body>
+</html>

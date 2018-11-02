@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+  <title>Graficas</title>
+</head>
+<style>
+html,body {
+  margin: 0 auto;
+  font-family: 'Roboto', sans-serif;
+}
+h2 {
+  text-align: center;
+  color: #24292E;
+}
+/*svg es el grupo que contiene la grafica*/
+svg {
+  background-color:white;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+  top: 50px;
+  position: relative;
+}
+/*estilos para los axis X y Y */
+.axis path,
+.axis line {
+  fill: none;
+  stroke: black;
+  shape-rendering : chrishpEdges;
+}
+</style>
+<body>
+
+  <H2>Base para Graficas</H2>
+
+  <script>
+  //CONVENCION DE BUENAS PRACTICAS PARA GENERAR UN SVG
+  //EL primer paso es definir nuestro margen con propiedades para los cuatro lados
+  var margin = {top: 20, right: 10, bottom: 100, left: 40},
+  //Luego definimos el width y height como las dimensiones internas del area de la grafica
+  width = 700 - margin.right - margin.left,
+  height = 500 - margin.top - margin.bottom;
+  //Finalmente, definimos el svg como un elemento G(para que sea un grupo) que transcribe
+  //el origen hacia la esquina izquierda del area de la grafica
+  var svg = d3.select("body").append('svg')
+  .attr({
+    "width" : width + margin.right + margin.left,
+    "height" : height + margin.top + margin.bottom
+
+  })
+  .append("g")
+  .attr("transform", "translate(" + margin.left + "," + margin.right +")" );
+  //Con esta convencion, todo el codigo siguiente puede ignorar margenes
+  //Con esta convencion si queremos agregar axes a la grafica, se posicionaran correctamente por default en las orientaciones "left" y "top"
+  //Para la orientacion "right" y "bottom", necesitamos traducir el axis elemento G por si width o height respectibamente
+
+  //A continuacion crearemos las escalas de X y Y
+
+  //Las escalas son funciones que mapean de un input domain a un output range
+  //Existen varios tipos de escalas,las más usadas son  ordinal y linear
+  //La escala ordinal tiene un domino discreto, como un set de nombres o categorias, tambien puedne ser escalas cuantitativas con numeros reales
+  //por lo que la escala X va a contener el nombre de los paises y y su gdp
+  var xScale = d3.scale.ordinal()//aqui creamos una nueva escala ordinal con un domino y rango vacios.esta es invalida hasta que se especifique un output range
+  .rangeBands([0, width], 0.2 , 0.2 ); //rangeBands especifica el output range de un intervalo continuo con un arreglo de dos valores que representan el valor minimo y maximo.
+
+  //La escala linear construlle una nueva escala continua con el unit dominion de [0,1] y el rango de [0,1] por default
+  var yScale = d3.scale.linear()
+  .range([ height , 0  ]);//Si el rango es especificado, pone el rango de la escala al valor especificado en el arreglo, el arreglo puede contener dos o más elementos
+
+  //DEFINIMOS LOS AXIS
+  //Las axis son un metodo de D3 que despliega las lineas de referencia para las escalas de forma automatica, así solo te concentras en hacer los graficos.
+  //el metodo de axis esta diseñado para trabajar con escalas cuantitativas, de tiempo y ordinal scales (como sucede en este caso)
+  var xAxis = d3.svg.axis() //esta linea crea un nuevo default axis
+  .scale(xScale)//Si no especificamos una escala,regresa la escala como linear scale.
+  .orient("bottom"); //si no especificamosla orientacion el default de esta es "bottom"
+//las yAxis representaran los valores de "gdp"
+  var yAxis = d3.svg.axis()
+  .scale(yScale)
+  .orient("left");
+
+//IMPORTAMOS LA INFORMACION_____________________________________________________
+d3.csv("data.csv", function(error, data) {
+
+  if (error) console.log("Error la Data no fue cargada"); //checamos si existe un error en la importacion de nuestra data
+
+  //Parceo y convertir la data que esta en string a numeros
+
+  data.forEach(function (d) {
+    d['gdp'] =+d['gdp']; //basicamente usando + convertimos los valores gdp de strings a numeros
+    d.country = d.country; //aqui creamos una nueva variable la cual es igual a la iteracion de los "country" en el data.csv, esta nueva variable tiene el mismo nombre al valor que se le asigna
+    console.log(d.country)
+    console.log(d.gdp)
+  })
+//La siguiente funcion ordena los gdp de mayor a menor
+  data.sort(function (a,b) {
+    return b.gdp - a.gdp;
+
+  })
+
+  //especificar el dominio de las escalas de X y Y
+  xScale.domain(data.map(function (d) { return d.country;  }) ); //en la xScale solo vamos a mostrar los paises (sus barras y nombres)
+  yScale.domain([0, d3.max(data,  //d3.mx(data) regresa como limite el valor maximo que se encuentre en la data
+    function (d) { return d.gdp; })  ] ); ////en la yScale solo vamos a mostrar el gdp (se usara para el tamaño de las barras)
+
+  //DIBUJAR LOS RECTANGULOS_____________________________________________________
+  svg.selectAll('rect') //seleccionamos todos los rectangulos aunque todavia no existan
+  .data(data) //iteramos sobre toda la data
+  .enter() //insertamos
+  .append('rect')//creamos los rectangulos junto con sus atributos
+  .style("fill" , function(d , i) { return  'rgba(20, 80,200,' + String( 1 + (i * -0.05) ) + ')' })
+  //animacion para las barras***
+  .attr("height",0)
+  .attr("y", height)
+  .transition().duration(2000)//la duracion de la transicion es 2 segundos
+  .delay(function (d, i) { return i * 300 })
+   //fin de la animacion***
+  //Se necesitan cuatro atributos escenciales para dibujar una barra, los cuales son x,y,width y height
+  .attr ({
+    "x": function (d) { return xScale(d.country); }, //el parametro x toma los valores escalados por xScale de d.country, x es la posicion en x que va a ocupar
+    "y": function (d) { return yScale(d.gdp); }, //el parametro y toma los valores escalados por yScale de d.gdp, y es la posicion en y que va a ocupar
+    "width": xScale.rangeBand(), //width toma los valores de xScale.rangeBand que asegura que los rectangulos estaran separados y con un grosor proporcional
+    "height": function (d) {return height - yScale(d.gdp) }//height es igual a la variable height creada anteriormente, esta tiene el valor mas alto de la data, los siguientes rectangulos son iguales a su height, menos yScale(d.ggdp) la cual es la posicion y de los rectangulos
+  })
+
+   //degradado para las barras
+  //.style("fill" , function(d , i) { return  'rgb(20, 20),' + ((i * 30) + 100 ) + ')' });
+
+  //  rgb(0, 152, 217)
+
+
+  //dibujar labels para las barras
+  svg.selectAll('text')
+  .data(data) //iteramos sobre toda la data
+  .enter()
+  .append('text')
+  .text(function (d) { return d.gdp; }) //EL valor que vamos a poner
+  .attr('x', function (d) { return xScale(d.country) +  xScale.rangeBand()/2; }) //el texto se rendera en medio de las barras
+  .attr('y', function (d) { return yScale(d.gdp) + 12 }) //EL texto sera tan alto como las barras menos 12 Pixeles de padding
+  .attr("dy",".5em")
+  .style("fill","white")
+  .style("text-anchor", "middle");
+
+
+  //Dibujar las axis X, en este caso son los nombres de los paises
+
+  svg.append("g")
+  .attr("class" , "x axis")
+  .attr("transform", "translate(0," + height + ")" ) //Esto hace que el xAxis este al fondo de los rectangulos
+  .call(xAxis) //llamamos el xAxis que definimos
+  .selectAll("text")
+  .attr("transform", "rotate(-60)")
+  .attr("dx", "-.28em")
+  .attr("dy",".5em")
+  .style("text-anchor","end")//el texto se rendera antes del punto donde normalmente se renderea
+  .style("font-size","12px");
+
+  //Dibujar el axis Y, en este caso son los valores al lado de las barras
+
+  svg.append("g")
+  .attr("class" , "y axis")
+  .call(yAxis);
+
+
+
+}); //fin de la funcion que carga la data
+
+
+</script>
+</body>
+</html>

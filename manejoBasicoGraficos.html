@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<!--
+Created using JS Bin
+http://jsbin.com
+
+Copyright (c) 2017 by anonymous (http://jsbin.com/dayonitutu/1/edit)
+
+Released under the MIT license: http://jsbin.mit-license.org
+-->
+<meta name="robots" content="noindex">
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>D3 Example</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+  </head>
+  <body>
+
+    <script>
+//La info que mostramos
+      var data = [1, 2, 3, 4, 5];
+//
+      var scale = d3.scale.linear()
+        .domain([1, 5])   // Data space
+        .range([0, 200]); // Pixel space
+//Aqui creamos el svg dentro del body, le asignamos 
+//un width y un height
+      var svg = d3.select("body").append("svg")
+        .attr("width",  250)
+        .attr("height", 250);
+
+      svg.selectAll("rect")
+        .data(data).enter().append("rect")
+          .attr("x", scale)
+          .attr("y", 50)
+          .attr("width",  20)
+          .attr("height", 20);
+
+    </script>
+
+  </body>
+</html>
